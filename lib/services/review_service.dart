@@ -30,6 +30,13 @@ class ReviewService {
     await _request(prefs);
   }
 
+  /// The core differentiator working is the strongest "ask" moment the app
+  /// has — fire on the first successful Identify result.
+  Future<void> onIdentifySuccess() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _request(prefs);
+  }
+
   Future<void> _request(SharedPreferences prefs) async {
     if (_shownThisSession) return;
     if (prefs.getBool(_shownKey) == true) return;
@@ -38,6 +45,17 @@ class ReviewService {
     final review = InAppReview.instance;
     if (await review.isAvailable()) {
       await review.requestReview();
+    }
+  }
+
+  /// For an explicit "Rate HazMat Pro" tap in Settings — bypasses the
+  /// once-ever gate above since the user asked for this directly.
+  Future<void> requestExplicit() async {
+    final review = InAppReview.instance;
+    if (await review.isAvailable()) {
+      await review.requestReview();
+    } else {
+      await review.openStoreListing();
     }
   }
 }

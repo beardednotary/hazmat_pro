@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
 
@@ -52,15 +53,15 @@ class QuickRefScreen extends StatelessWidget {
           title: 'GHS PICTOGRAMS',
           accentColor: Color(0xFF30D158),
           items: [
-            _RefItem(label: 'Flame', detail: 'Flammable, self-reactive, pyrophoric, or self-heating'),
-            _RefItem(label: 'Flame Over Circle', detail: 'Oxidizer'),
-            _RefItem(label: 'Exploding Bomb', detail: 'Explosive or self-reactive substance'),
-            _RefItem(label: 'Gas Cylinder', detail: 'Gas under pressure — compressed, liquefied, or dissolved'),
-            _RefItem(label: 'Corrosion', detail: 'Corrosive to metal, skin, or eyes'),
-            _RefItem(label: 'Skull & Crossbones', detail: 'Acute toxicity — can be fatal or cause harm at low doses'),
-            _RefItem(label: 'Health Hazard', detail: 'Carcinogen, respiratory sensitizer, reproductive toxicity, or organ toxicity'),
-            _RefItem(label: 'Exclamation Mark', detail: 'Irritant, skin sensitizer, or narcotic effects — lower acute hazard'),
-            _RefItem(label: 'Environment', detail: 'Hazardous to the aquatic environment (not required by OSHA, but common)'),
+            _RefItem(label: 'Flame', detail: 'Flammable, self-reactive, pyrophoric, or self-heating', asset: 'assets/ghs/flame.svg'),
+            _RefItem(label: 'Flame Over Circle', detail: 'Oxidizer', asset: 'assets/ghs/flame_over_circle.svg'),
+            _RefItem(label: 'Exploding Bomb', detail: 'Explosive or self-reactive substance', asset: 'assets/ghs/exploding_bomb.svg'),
+            _RefItem(label: 'Gas Cylinder', detail: 'Gas under pressure — compressed, liquefied, or dissolved', asset: 'assets/ghs/gas_cylinder.svg'),
+            _RefItem(label: 'Corrosion', detail: 'Corrosive to metal, skin, or eyes', asset: 'assets/ghs/corrosion.svg'),
+            _RefItem(label: 'Skull & Crossbones', detail: 'Acute toxicity — can be fatal or cause harm at low doses', asset: 'assets/ghs/skull_crossbones.svg'),
+            _RefItem(label: 'Health Hazard', detail: 'Carcinogen, respiratory sensitizer, reproductive toxicity, or organ toxicity', asset: 'assets/ghs/health_hazard.svg'),
+            _RefItem(label: 'Exclamation Mark', detail: 'Irritant, skin sensitizer, or narcotic effects — lower acute hazard', asset: 'assets/ghs/exclamation_mark.svg'),
+            _RefItem(label: 'Environment', detail: 'Hazardous to the aquatic environment (not required by OSHA, but common)', asset: 'assets/ghs/environment.svg'),
           ],
         ),
         SizedBox(height: 16),
@@ -140,8 +141,9 @@ class _RefSection extends StatelessWidget {
 class _RefItem {
   final String label;
   final String detail;
+  final String? asset;
 
-  const _RefItem({required this.label, required this.detail});
+  const _RefItem({required this.label, required this.detail, this.asset});
 
   Widget _build(Color accent) {
     return Padding(
@@ -149,8 +151,12 @@ class _RefItem {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (asset != null) ...[
+            SizedBox(width: 26, height: 26, child: SvgPicture.asset(asset!)),
+            const SizedBox(width: 10),
+          ],
           SizedBox(
-            width: 130,
+            width: asset != null ? 104 : 130,
             child: Text(
               label,
               style: HMTextStyles.codeLabel.copyWith(

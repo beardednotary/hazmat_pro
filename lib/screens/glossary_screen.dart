@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../data/glossary_data.dart';
+import '../services/review_service.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/hazmat_search_bar.dart';
 
@@ -29,6 +30,9 @@ class _GlossaryScreenState extends State<GlossaryScreen> {
           ? _sorted
           : _sorted.where((e) => e.matchesQuery(q)).toList();
     });
+    if (q.isNotEmpty && _results.isNotEmpty) {
+      ReviewService.instance.onSearchSuccess();
+    }
   }
 
   bool _isSearching() => _controller.text.isNotEmpty;

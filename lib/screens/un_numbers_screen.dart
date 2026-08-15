@@ -16,7 +16,8 @@ class UnNumbersScreen extends StatefulWidget {
 
 class _UnNumbersScreenState extends State<UnNumbersScreen> {
   final _controller = TextEditingController();
-  List<UnEntry> _results = kUnNumbers;
+  String _query = '';
+  bool _starredOnly = false;
 
   @override
   void initState() {
@@ -33,15 +34,25 @@ class _UnNumbersScreenState extends State<UnNumbersScreen> {
 
   void _rebuild() => setState(() {});
 
+  List<UnEntry> get _visibleResults {
+    var results = _query.isEmpty
+        ? kUnNumbers
+        : kUnNumbers.where((e) => e.matchesQuery(_query)).toList();
+    if (_starredOnly) {
+      results = results.where((e) => StarService.instance.isStarred(e.unNumber)).toList();
+    }
+    return results;
+  }
+
   void _onSearch(String q) {
-    setState(() {
-      _results = q.isEmpty
-          ? kUnNumbers
-          : kUnNumbers.where((e) => e.matchesQuery(q)).toList();
-    });
-    if (q.isNotEmpty && _results.isNotEmpty) {
+    setState(() => _query = q);
+    if (q.isNotEmpty && _visibleResults.isNotEmpty) {
       ReviewService.instance.onSearchSuccess();
     }
+  }
+
+  void _toggleStarredOnly() {
+    setState(() => _starredOnly = !_starredOnly);
   }
 
   Future<void> _onStarTap(String unNumber) async {
@@ -53,29 +64,58 @@ class _UnNumbersScreenState extends State<UnNumbersScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final results = _visibleResults;
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: HazmatSearchBar(
-            controller: _controller,
-            hint: 'Search UN number, name, or ERG guide…',
-            onChanged: _onSearch,
+          child: Row(
+            children: [
+              Expanded(
+                child: HazmatSearchBar(
+                  controller: _controller,
+                  hint: 'Search UN number, name, or ERG guide…',
+                  onChanged: _onSearch,
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _toggleStarredOnly,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _starredOnly ? HMColors.hazardYellow : HMColors.surface,
+                    border: Border.all(
+                      color: _starredOnly ? HMColors.hazardYellow : HMColors.border,
+                    ),
+                  ),
+                  child: Icon(
+                    _starredOnly ? Icons.star : Icons.star_outline,
+                    size: 20,
+                    color: _starredOnly ? Colors.black : HMColors.dimText,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        if (_results.isEmpty)
+        if (results.isEmpty)
           Expanded(
             child: Center(
-              child: Text('NO RESULTS', style: HMTextStyles.sectionHeader),
+              child: Text(
+                _starredOnly ? 'NO STARRED ENTRIES' : 'NO RESULTS',
+                style: HMTextStyles.sectionHeader,
+              ),
             ),
           )
         else
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.only(bottom: 32),
-              itemCount: _results.length,
+              itemCount: results.length,
               itemBuilder: (context, index) {
-                final entry = _results[index];
+                final entry = results[index];
                 return _UnTile(
                   entry: entry,
                   isStarred: StarService.instance.isStarred(entry.unNumber),

@@ -1,7 +1,7 @@
 name: hazmat_pro
 description: HazMat Pro - MSDS & UN Number reference. Placards, UN numbers, GHS/DOT glossary, and quick reference for hazmat handling.
 publish_to: 'none'
-version: 1.0.0+3
+version: 1.0.0+4
 
 environment:
   sdk: ^3.11.3
@@ -16,6 +16,9 @@ dependencies:
   speech_to_text: ^7.0.0
   http: ^1.2.0
   flutter_svg: ^2.0.10+1
+  package_info_plus: ^8.1.1
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.2
 
 dev_dependencies:
   flutter_test:
@@ -33,3 +36,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/placards/
+    - assets/ghs/

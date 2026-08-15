@@ -8,6 +8,7 @@ import 'screens/un_numbers_screen.dart';
 import 'screens/glossary_screen.dart';
 import 'screens/quick_ref_screen.dart';
 import 'screens/identify_screen.dart';
+import 'screens/settings_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -42,6 +43,12 @@ class _AppShellState extends State<AppShell> {
     }
   }
 
+  void _openSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,6 +59,7 @@ class _AppShellState extends State<AppShell> {
             HazmatHeader(
               title: _titles[_currentIndex],
               subtitle: _subtitles[_currentIndex],
+              onSettings: _openSettings,
             ),
             Expanded(
               child: IndexedStack(

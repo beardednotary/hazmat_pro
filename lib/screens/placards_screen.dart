@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../data/placards_data.dart';
+import '../services/review_service.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/hazmat_search_bar.dart';
 import 'placard_detail_screen.dart';
@@ -29,6 +30,9 @@ class _PlacardsScreenState extends State<PlacardsScreen> {
           ? kPlacards
           : kPlacards.where((p) => p.matchesQuery(q)).toList();
     });
+    if (q.isNotEmpty && _results.isNotEmpty) {
+      ReviewService.instance.onSearchSuccess();
+    }
   }
 
   void _openPlacard(Placard placard) {

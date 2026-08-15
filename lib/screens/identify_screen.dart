@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 import '../data/placards_data.dart';
 import '../models/identification_result.dart';
 import '../services/history_service.dart';
+import '../services/review_service.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
 
@@ -116,6 +117,7 @@ class _IdentifyScreenState extends State<IdentifyScreen> {
           _state = _State.results;
         });
         await HistoryService.instance.add(result);
+        ReviewService.instance.onIdentifySuccess();
       } else {
         setState(() {
           _errorMsg = 'Server error ${response.statusCode}. Try again.';
