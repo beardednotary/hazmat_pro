@@ -40,7 +40,7 @@ class UnEntry {
 
 const List<UnEntry> kUnNumbers = [
   UnEntry(unNumber: '1203', properShippingName: 'Gasoline', hazardClass: '3', packingGroup: 'II', ergGuideNumber: '128', notes: 'Common motor fuel. Vapors heavier than air, pool in low areas.'),
-  UnEntry(unNumber: '1202', properShippingName: 'Diesel fuel / Fuel oil', hazardClass: '3', packingGroup: 'III', ergGuideNumber: '128', notes: 'Combustible liquid, lower volatility than gasoline.'),
+  UnEntry(unNumber: '1202', properShippingName: 'Diesel fuel / Fuel oil', hazardClass: '3', packingGroup: 'III', ergGuideNumber: '128', notes: 'Class 3 flammable liquid; higher flash point and lower volatility than gasoline, which is why it\'s often called "combustible" in casual use.'),
   UnEntry(unNumber: '1223', properShippingName: 'Kerosene', hazardClass: '3', packingGroup: 'III', ergGuideNumber: '128', notes: 'Used as jet fuel base and heating fuel.'),
   UnEntry(unNumber: '1863', properShippingName: 'Fuel, aviation, turbine engine (Jet A / JP-8)', hazardClass: '3', packingGroup: 'III', ergGuideNumber: '128', notes: 'Common at airports and military fuel points.'),
   UnEntry(unNumber: '1170', properShippingName: 'Ethanol / Ethyl alcohol', hazardClass: '3', packingGroup: 'II', ergGuideNumber: '127', notes: 'Also seen in beverage-grade tanker transport.'),
