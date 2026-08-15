@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/hazmat_theme.dart';
+import '../widgets/field_card.dart';
 
 class QuickRefScreen extends StatelessWidget {
   const QuickRefScreen({super.key});
@@ -120,38 +121,16 @@ class _RefSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: HMColors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: accentColor.withAlpha(60), width: 1.5),
-      ),
+    return FieldCard(
+      label: title,
+      icon: icon,
+      accent: accentColor,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: accentColor.withAlpha(20),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                Icon(icon, size: 16, color: accentColor),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: HMTextStyles.sectionHeader.copyWith(
-                    color: accentColor,
-                    fontSize: 11,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(height: 1, color: accentColor.withAlpha(40)),
-          ...items.map((item) => item._build(accentColor)),
+          for (int i = 0; i < items.length; i++) ...[
+            if (i > 0) Container(height: 1, color: HMColors.divider),
+            items[i]._build(accentColor),
+          ],
         ],
       ),
     );
@@ -166,7 +145,7 @@ class _RefItem {
 
   Widget _build(Color accent) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

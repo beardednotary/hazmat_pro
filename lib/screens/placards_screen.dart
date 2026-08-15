@@ -99,7 +99,6 @@ class _PlacardTile extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: HMColors.surface,
-          borderRadius: BorderRadius.circular(10),
           border: Border.all(color: HMColors.divider),
         ),
         padding: const EdgeInsets.all(8),
@@ -111,7 +110,6 @@ class _PlacardTile extends StatelessWidget {
               height: 56,
               decoration: BoxDecoration(
                 color: _bg,
-                borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: HMColors.border),
               ),
               alignment: Alignment.center,

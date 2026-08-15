@@ -6,18 +6,15 @@ class HMColors {
 
   static const Color background = Color(0xFF0D0D0D);
   static const Color surface = Color(0xFF1A1A1A);
-  static const Color surfaceElevated = Color(0xFF252525);
+  static const Color surfaceElevated = Color(0xFF242424);
+  static const Color headerBg = Color(0xFF141414);
 
   static const Color hazardYellow = Color(0xFFFFD400);
-  static const Color hazardYellowBright = Color(0xFFFFE666);
-  static const Color hazardYellowGlow = Color(0x40FFD400);
-  static const Color panelBg = Color(0xFF0A0900);
-  static const Color panelBorder = Color(0xFF2A2400);
+  static const Color hazardYellowPress = Color(0x33FFD400);
 
   static const Color hazardOrange = Color(0xFFFF6D00);
   static const Color dangerRed = Color(0xFFE5342A);
-  static const Color dangerRedBg = Color(0xFF1A0000);
-  static const Color dangerRedGlow = Color(0x40E5342A);
+  static const Color dangerRedPress = Color(0x33E5342A);
 
   // DOT hazard class accent colors — used on placard tiles
   static const Color classExplosive = Color(0xFFFF6D00);
@@ -43,41 +40,40 @@ class HMColors {
 class HMTextStyles {
   HMTextStyles._();
 
-  static TextStyle placardDisplay({double fontSize = 34}) =>
+  // Flat, no glow — big condensed numerals for placard classes / UN numbers.
+  static TextStyle heroNumber({double fontSize = 30, Color? color}) =>
       GoogleFonts.bebasNeue(
         fontSize: fontSize,
-        color: HMColors.hazardYellow,
-        letterSpacing: 2,
-        shadows: const [
-          Shadow(color: Color(0x80FFD400), blurRadius: 10),
-        ],
+        color: color ?? HMColors.primaryText,
+        letterSpacing: 1,
       );
 
-  static TextStyle get classNumber => GoogleFonts.bebasNeue(
-        fontSize: 30,
-        color: HMColors.hazardYellow,
-        letterSpacing: 1,
-        shadows: const [Shadow(color: Color(0x60FFD400), blurRadius: 6)],
+  // Screen title in the header — flat bold, not an LCD readout.
+  static TextStyle screenTitle({double fontSize = 24}) => GoogleFonts.oswald(
+        fontSize: fontSize,
+        color: HMColors.primaryText,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
       );
 
   static TextStyle get dataMono => GoogleFonts.robotoMono(
         fontSize: 12,
         color: HMColors.secondaryText,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
       );
 
   static TextStyle get codeLabel => GoogleFonts.robotoMono(
-        fontSize: 16,
+        fontSize: 15,
         color: HMColors.hazardYellow,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
         fontWeight: FontWeight.w600,
       );
 
   static TextStyle get termLabel => GoogleFonts.oswald(
         fontSize: 17,
-        color: HMColors.hazardYellow,
+        color: HMColors.primaryText,
         fontWeight: FontWeight.w600,
-        letterSpacing: 0.5,
+        letterSpacing: 0.3,
       );
 
   static TextStyle get sectionHeader => GoogleFonts.oswald(
@@ -119,15 +115,15 @@ class HMTheme {
           filled: true,
           fillColor: HMColors.surface,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: HMColors.border),
           ),
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: HMColors.border),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
             borderSide: const BorderSide(color: HMColors.hazardYellow, width: 1.5),
           ),
           hintStyle: const TextStyle(color: HMColors.dimText),

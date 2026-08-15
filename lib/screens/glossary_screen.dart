@@ -117,7 +117,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
       child: Row(
         children: [
-          Text(letter, style: HMTextStyles.placardDisplay(fontSize: 22)),
+          Text(letter, style: HMTextStyles.heroNumber(fontSize: 22, color: HMColors.hazardYellow)),
           const SizedBox(width: 10),
           Expanded(child: Container(height: 1, color: HMColors.divider)),
         ],
@@ -137,7 +137,6 @@ class _GlossaryTile extends StatelessWidget {
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: HMColors.surface,
-        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: HMColors.divider),
       ),
       child: Column(

@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:http/http.dart' as http;
 import '../theme/hazmat_theme.dart';
+import '../widgets/field_card.dart';
 
 // Set after Vercel deployment
 const _kApiUrl = 'https://dahvio.com/api/hazmat-assistant';
@@ -20,11 +21,8 @@ class AssistantScreen extends StatefulWidget {
   State<AssistantScreen> createState() => _AssistantScreenState();
 }
 
-class _AssistantScreenState extends State<AssistantScreen>
-    with SingleTickerProviderStateMixin {
+class _AssistantScreenState extends State<AssistantScreen> {
   final _speech = SpeechToText();
-  late final AnimationController _pulseCtrl;
-  late final Animation<double> _pulse;
 
   _State _state = _State.idle;
   String _transcript = '';
@@ -34,19 +32,11 @@ class _AssistantScreenState extends State<AssistantScreen>
   @override
   void initState() {
     super.initState();
-    _pulseCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-    _pulse = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _pulseCtrl, curve: Curves.easeInOut),
-    );
     _initSpeech();
   }
 
   @override
   void dispose() {
-    _pulseCtrl.dispose();
     _speech.stop();
     super.dispose();
   }
@@ -153,147 +143,92 @@ class _AssistantScreenState extends State<AssistantScreen>
         _State.unavailable => 'UNAVAILABLE',
       };
 
+  Color get _statusColor => switch (_state) {
+        _State.recording => HMColors.dangerRed,
+        _State.results => const Color(0xFF30D158),
+        _State.error => HMColors.dangerRed,
+        _ => HMColors.hazardYellow,
+      };
+
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Status panel ─────────────────────────────────────────
-          Container(
-            color: HMColors.panelBg,
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          // ── Status row ───────────────────────────────────────────
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(color: _statusColor, shape: BoxShape.circle),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _statusLabel,
+                style: HMTextStyles.sectionHeader.copyWith(color: _statusColor, fontSize: 11),
+              ),
+            ],
+          ),
+          if (_transcript.isNotEmpty) ...[
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: HMColors.surface,
+                border: Border.all(color: HMColors.border),
+              ),
+              child: Text(
+                '"$_transcript"',
+                style: HMTextStyles.dimBody.copyWith(fontStyle: FontStyle.italic),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 24),
+
+          // ── Hold-to-speak button ─────────────────────────────────
+          if (_state != _State.results)
+            GestureDetector(
+              onLongPressStart: (_) => _startRecording(),
+              onLongPressEnd: (_) => _stopAndAnalyze(),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: _state == _State.recording ? HMColors.dangerRed : HMColors.hazardYellow,
+                  border: Border.all(
+                    color: _state == _State.recording ? HMColors.dangerRed : HMColors.hazardYellow,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('STATUS', style: HMTextStyles.sectionHeader),
-                    const Spacer(),
-                    AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      width: 8,
-                      height: 8,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: _state == _State.recording
-                            ? HMColors.dangerRed
-                            : _state == _State.results
-                                ? const Color(0xFF30D158)
-                                : HMColors.hazardYellow.withAlpha(120),
-                      ),
+                    Icon(
+                      _state == _State.recording ? Icons.mic : Icons.mic_none,
+                      size: 22,
+                      color: Colors.black,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 10),
                     Text(
-                      _statusLabel,
-                      style: HMTextStyles.placardDisplay(fontSize: 13).copyWith(
-                        color: _state == _State.recording
-                            ? HMColors.dangerRed
-                            : HMColors.hazardYellow,
+                      _state == _State.recording ? 'RELEASE TO IDENTIFY' : 'HOLD TO SPEAK',
+                      style: HMTextStyles.sectionHeader.copyWith(
+                        color: Colors.black,
+                        fontSize: 13,
+                        letterSpacing: 2,
                       ),
                     ),
                   ],
-                ),
-                if (_transcript.isNotEmpty) ...[
-                  const SizedBox(height: 10),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: HMColors.background,
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: HMColors.panelBorder),
-                    ),
-                    child: Text(
-                      '"$_transcript"',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: HMColors.secondaryText,
-                        fontStyle: FontStyle.italic,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          Container(height: 1, color: HMColors.divider),
-
-          const SizedBox(height: 32),
-
-          // ── Hold button ──────────────────────────────────────────
-          if (_state != _State.results)
-            Center(
-              child: GestureDetector(
-                onLongPressStart: (_) => _startRecording(),
-                onLongPressEnd: (_) => _stopAndAnalyze(),
-                child: AnimatedBuilder(
-                  animation: _pulse,
-                  builder: (context, child) {
-                    final isRecording = _state == _State.recording;
-                    final scale = isRecording ? _pulse.value : 1.0;
-                    final glowAlpha = isRecording
-                        ? (80 * _pulse.value).round()
-                        : 30;
-                    final glowColor = isRecording
-                        ? HMColors.dangerRed
-                        : HMColors.hazardYellow;
-                    return Transform.scale(
-                      scale: scale,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isRecording
-                              ? HMColors.dangerRed.withAlpha(220)
-                              : HMColors.surface,
-                          border: Border.all(
-                            color: isRecording
-                                ? HMColors.dangerRed
-                                : HMColors.hazardYellow,
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: glowColor.withAlpha(glowAlpha),
-                              blurRadius: 30,
-                              spreadRadius: 4,
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              isRecording ? Icons.mic : Icons.mic_none,
-                              size: 36,
-                              color: isRecording
-                                  ? Colors.white
-                                  : HMColors.hazardYellow,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              isRecording ? 'RELEASE' : 'HOLD',
-                              style: HMTextStyles.sectionHeader.copyWith(
-                                color: isRecording
-                                    ? Colors.white
-                                    : HMColors.hazardYellow,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ),
             ),
 
           if (_state == _State.analyzing) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             Center(
               child: Text(
                 'IDENTIFYING MATERIAL...',
@@ -307,96 +242,66 @@ class _AssistantScreenState extends State<AssistantScreen>
           ],
 
           if (_state == _State.idle || _state == _State.unavailable) ...[
-            const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _state == _State.unavailable
-                    ? 'Speech recognition is not available on this device.'
-                    : 'Hold the button and speak a UN number, placard, or material name — e.g. "UN 1203" or "gasoline tanker rollover."',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: HMColors.secondaryText,
-                  height: 1.6,
-                ),
-              ),
+            const SizedBox(height: 16),
+            Text(
+              _state == _State.unavailable
+                  ? 'Speech recognition is not available on this device.'
+                  : 'Hold the button and speak a UN number, placard, or material name — e.g. "UN 1203" or "gasoline tanker rollover."',
+              style: HMTextStyles.dimBody.copyWith(height: 1.6),
             ),
           ],
 
           if (_state == _State.error) ...[
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _errorMsg,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: HMColors.dangerRed,
-                  height: 1.5,
-                ),
-              ),
+            const SizedBox(height: 14),
+            Text(
+              _errorMsg,
+              style: HMTextStyles.dimBody.copyWith(color: HMColors.dangerRed),
             ),
             const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 64),
-              child: _OutlineButton(label: 'TRY AGAIN', onTap: _reset),
-            ),
+            _OutlineButton(label: 'TRY AGAIN', onTap: _reset),
           ],
 
           // ── Results ──────────────────────────────────────────────
           if (_state == _State.results && _result != null) ...[
+            const SizedBox(height: 4),
             _IdCard(result: _result!),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                children: [
-                  if (_result!.isolationPpe.isNotEmpty)
-                    _ResultCard(
-                      icon: Icons.shield_outlined,
-                      title: 'ISOLATION & PPE',
-                      color: HMColors.hazardYellow,
-                      items: _result!.isolationPpe,
-                    ),
-                  if (_result!.responseGuidance.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    _ResultCard(
-                      icon: Icons.local_fire_department_outlined,
-                      title: 'RESPONSE GUIDANCE',
-                      color: HMColors.dangerRed,
-                      items: _result!.responseGuidance,
-                    ),
-                  ],
-                  if (_result!.overall.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: HMColors.surface,
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: HMColors.divider),
-                      ),
-                      child: Text(
-                        _result!.overall,
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: HMColors.primaryText,
-                          fontStyle: FontStyle.italic,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  _OutlineButton(label: 'ASK AGAIN', onTap: _reset),
-                ],
+            const SizedBox(height: 12),
+            if (_result!.isolationPpe.isNotEmpty)
+              FieldCard(
+                label: 'ISOLATION & PPE',
+                icon: Icons.shield_outlined,
+                accent: HMColors.hazardYellow,
+                child: _BulletList(items: _result!.isolationPpe, color: HMColors.hazardYellow),
               ),
-            ),
+            if (_result!.responseGuidance.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              FieldCard(
+                label: 'RESPONSE GUIDANCE',
+                icon: Icons.local_fire_department_outlined,
+                accent: HMColors.dangerRed,
+                child: _BulletList(items: _result!.responseGuidance, color: HMColors.dangerRed),
+              ),
+            ],
+            if (_result!.overall.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: HMColors.surface,
+                  border: Border.all(color: HMColors.divider),
+                ),
+                child: Text(
+                  _result!.overall,
+                  style: HMTextStyles.bodyText.copyWith(
+                    fontStyle: FontStyle.italic,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+            _OutlineButton(label: 'ASK AGAIN', onTap: _reset),
           ],
-
-          const SizedBox(height: 40),
         ],
       ),
     );
@@ -410,14 +315,17 @@ class _IdCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: HMColors.panelBg,
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      padding: const EdgeInsets.all(14),
+      decoration: const BoxDecoration(
+        color: HMColors.headerBg,
+        border: Border(left: BorderSide(color: HMColors.hazardYellow, width: 4)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Text('IDENTIFIED', style: HMTextStyles.sectionHeader),
+              Text('IDENTIFIED', style: HMTextStyles.sectionHeader.copyWith(fontSize: 10)),
               const Spacer(),
               if (result.guideNumber.isNotEmpty)
                 Text(
@@ -430,7 +338,7 @@ class _IdCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(result.material, style: HMTextStyles.placardDisplay(fontSize: 24)),
+          Text(result.material, style: HMTextStyles.screenTitle(fontSize: 22)),
           if (result.unNumber.isNotEmpty || result.hazardClass.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
@@ -444,77 +352,30 @@ class _IdCard extends StatelessWidget {
   }
 }
 
-class _ResultCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final Color color;
+class _BulletList extends StatelessWidget {
   final List<String> items;
-
-  const _ResultCard({
-    required this.icon,
-    required this.title,
-    required this.color,
-    required this.items,
-  });
+  final Color color;
+  const _BulletList({required this.items, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: HMColors.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withAlpha(60), width: 1.5),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              color: color.withAlpha(20),
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(7)),
-            ),
-            child: Row(
-              children: [
-                Icon(icon, size: 14, color: color),
-                const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: HMTextStyles.sectionHeader.copyWith(
-                    color: color,
-                    fontSize: 10,
-                    letterSpacing: 2,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(height: 1, color: color.withAlpha(40)),
-          ...items.map(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: items
+          .map(
             (item) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.only(bottom: 8),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.circle, size: 5, color: color.withAlpha(180)),
+                  Icon(Icons.circle, size: 5, color: color),
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: HMColors.primaryText,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
+                  Expanded(child: Text(item, style: HMTextStyles.bodyText)),
                 ],
               ),
             ),
-          ),
-        ],
-      ),
+          )
+          .toList(),
     );
   }
 }
@@ -532,8 +393,7 @@ class _OutlineButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 13),
         decoration: BoxDecoration(
           color: HMColors.surface,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: HMColors.border),
+          border: Border.all(color: HMColors.hazardYellow),
         ),
         child: Text(
           label,

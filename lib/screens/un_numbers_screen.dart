@@ -105,10 +105,14 @@ class _UnTile extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(14, 12, 8, 12),
       decoration: BoxDecoration(
         color: HMColors.surface,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: isStarred ? HMColors.hazardYellow.withAlpha(60) : HMColors.divider,
-          width: isStarred ? 1.5 : 1,
+        border: Border(
+          top: const BorderSide(color: HMColors.divider),
+          right: const BorderSide(color: HMColors.divider),
+          bottom: const BorderSide(color: HMColors.divider),
+          left: BorderSide(
+            color: isStarred ? HMColors.hazardYellow : HMColors.divider,
+            width: isStarred ? 4 : 1,
+          ),
         ),
       ),
       child: Row(
