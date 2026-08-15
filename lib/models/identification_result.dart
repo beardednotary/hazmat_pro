@@ -1,3 +1,5 @@
+import '../data/un_numbers_data.dart';
+
 class IdentificationResult {
   final String material;
   final String unNumber;
@@ -18,6 +20,24 @@ class IdentificationResult {
     required this.overall,
     required this.queriedAt,
   });
+
+  /// Built entirely from the local UN Numbers list — no network needed.
+  /// Used so Identify still works for known materials while offline, and
+  /// so the feature is testable before the AI backend exists.
+  factory IdentificationResult.fromLocalMatch(UnEntry entry) {
+    return IdentificationResult(
+      material: entry.properShippingName,
+      unNumber: entry.displayNumber,
+      hazardClass: entry.hazardClass,
+      guideNumber: entry.ergGuideNumber,
+      isolationPpe: [
+        'Consult ERG Guide ${entry.ergGuideNumber} for full isolation distances and PPE requirements.',
+      ],
+      responseGuidance: [entry.notes],
+      overall: 'Matched from the local UN Numbers list — works offline, no network needed.',
+      queriedAt: DateTime.now(),
+    );
+  }
 
   factory IdentificationResult.fromApiJson(Map<String, dynamic> json) {
     return IdentificationResult(

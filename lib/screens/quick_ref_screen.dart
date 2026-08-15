@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
 
@@ -10,8 +11,10 @@ class QuickRefScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
-      children: const [
-        _RefSection(
+      children: [
+        const _EmergencyContactCard(),
+        const SizedBox(height: 16),
+        const _RefSection(
           icon: Icons.crop_square,
           title: 'RESPONSE ZONES',
           accentColor: HMColors.dangerRed,
@@ -24,7 +27,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.checklist_rtl,
           title: 'PACKING GROUPS',
           accentColor: HMColors.hazardYellow,
@@ -36,7 +39,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.shield_outlined,
           title: 'PPE LEVELS (EPA)',
           accentColor: Color(0xFF5E9EFF),
@@ -48,7 +51,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.grid_view,
           title: 'GHS PICTOGRAMS',
           accentColor: Color(0xFF30D158),
@@ -65,7 +68,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.description_outlined,
           title: 'SDS 16 SECTIONS',
           accentColor: Color(0xFFFF9F0A),
@@ -79,7 +82,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.local_shipping_outlined,
           title: 'PLACARDING & TRANSPORT',
           accentColor: Color(0xFFBF5AF2),
@@ -91,7 +94,7 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
         SizedBox(height: 16),
-        _RefSection(
+        const _RefSection(
           icon: Icons.warning_amber_rounded,
           title: 'USING THE ERG',
           accentColor: HMColors.hazardOrange,
@@ -103,6 +106,54 @@ class QuickRefScreen extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _EmergencyContactCard extends StatelessWidget {
+  const _EmergencyContactCard();
+
+  static const _chemtrecNumber = '18004249300';
+  static const _chemtrecDisplay = '1-800-424-9300';
+
+  Future<void> _call() => launchUrl(Uri(scheme: 'tel', path: _chemtrecNumber));
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _call,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: const BoxDecoration(
+          color: HMColors.headerBg,
+          border: Border(left: BorderSide(color: HMColors.dangerRed, width: 4)),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.phone_forwarded_outlined, size: 22, color: HMColors.dangerRed),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'CALL CHEMTREC',
+                    style: HMTextStyles.sectionHeader.copyWith(
+                      color: HMColors.dangerRed,
+                      fontSize: 11,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(_chemtrecDisplay, style: HMTextStyles.bodyText),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, size: 20, color: HMColors.dimText),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -168,7 +219,7 @@ class _RefItem {
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: Text(detail, style: HMTextStyles.dimBody),
+            child: Text(detail, style: HMTextStyles.bodyText),
           ),
         ],
       ),

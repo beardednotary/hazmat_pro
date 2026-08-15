@@ -7,11 +7,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:http/http.dart' as http;
 import '../data/placards_data.dart';
+import '../data/un_numbers_data.dart';
 import '../models/identification_result.dart';
 import '../services/history_service.dart';
 import '../services/review_service.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
+
+const _kExampleQueries = ['UN1203', 'Chlorine', 'Sulfuric acid', 'UN3480'];
 
 // Set after Vercel deployment
 const _kApiUrl = 'https://dahvio.com/api/hazmat-assistant';
@@ -97,6 +100,24 @@ class _IdentifyScreenState extends State<IdentifyScreen> {
   Future<void> _analyze(String query) async {
     setState(() => _state = _State.analyzing);
 
+    // Try the local UN Numbers list first — works offline and covers most
+    // real queries (a UN number or a known shipping name) without a
+    // network round-trip. Only free-text queries fall through to the AI.
+    final trimmed = query.trim();
+    if (trimmed.isNotEmpty) {
+      final localMatches = kUnNumbers.where((e) => e.matchesQuery(trimmed));
+      if (localMatches.isNotEmpty) {
+        final result = IdentificationResult.fromLocalMatch(localMatches.first);
+        setState(() {
+          _result = result;
+          _state = _State.results;
+        });
+        await HistoryService.instance.add(result);
+        ReviewService.instance.onIdentifySuccess();
+        return;
+      }
+    }
+
     try {
       final response = await http
           .post(
@@ -126,12 +147,14 @@ class _IdentifyScreenState extends State<IdentifyScreen> {
       }
     } on TimeoutException {
       setState(() {
-        _errorMsg = 'Request timed out. Check your connection.';
+        _errorMsg = 'Request timed out. No connection, and "$trimmed" isn\'t '
+            'in the local UN Numbers list — try a UN number or exact shipping name.';
         _state = _State.error;
       });
     } catch (e) {
       setState(() {
-        _errorMsg = 'Could not connect. Try again.';
+        _errorMsg = 'Could not connect. Try a UN number or exact shipping name '
+            'to search the local list without network.';
         _state = _State.error;
       });
     }
@@ -266,8 +289,29 @@ class _IdentifyScreenState extends State<IdentifyScreen> {
             Text(
               _state == _State.unavailable
                   ? 'Speech recognition is not available on this device.'
-                  : 'Hold the button and speak a UN number, placard, or material name — e.g. "UN 1203" or "gasoline tanker rollover."',
+                  : 'Hold the button and speak a UN number, placard, or material name — e.g. "UN 1203" or "gasoline tanker rollover." Exact UN numbers and shipping names work offline.',
               style: HMTextStyles.dimBody.copyWith(height: 1.6),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _kExampleQueries
+                  .map((q) => GestureDetector(
+                        onTap: () {
+                          setState(() => _transcript = q);
+                          _analyze(q);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: HMColors.surface,
+                            border: Border.all(color: HMColors.border),
+                          ),
+                          child: Text(q, style: HMTextStyles.dataMono.copyWith(fontSize: 12)),
+                        ),
+                      ))
+                  .toList(),
             ),
             if (HistoryService.instance.items.isNotEmpty) ...[
               const SizedBox(height: 20),

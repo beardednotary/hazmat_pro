@@ -97,3 +97,12 @@ const List<UnEntry> kUnNumbers = [
   UnEntry(unNumber: '2915', properShippingName: 'Radioactive material, Type A package', hazardClass: '7', ergGuideNumber: '163', notes: 'Time, distance, and shielding are the core exposure controls.'),
   UnEntry(unNumber: '2908', properShippingName: 'Radioactive material, excepted package — empty packaging', hazardClass: '7', ergGuideNumber: '161', notes: 'Lowest radioactive shipping category, minimal residual activity.'),
 ];
+
+/// Finds the UN entry with an exact [unNumber] match (e.g. from a placard's
+/// commonUnNumbers), or null if it's not in the curated list yet.
+UnEntry? unEntryForNumber(String unNumber) {
+  for (final e in kUnNumbers) {
+    if (e.unNumber == unNumber) return e;
+  }
+  return null;
+}
