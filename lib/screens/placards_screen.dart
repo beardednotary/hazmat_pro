@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../data/placards_data.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/hazmat_search_bar.dart';
@@ -85,13 +86,6 @@ class _PlacardTile extends StatelessWidget {
 
   const _PlacardTile({required this.placard, required this.onTap});
 
-  Color get _bg => Color(int.parse('0x${placard.colorHex}'));
-
-  Color get _fg {
-    final luminance = _bg.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -105,22 +99,9 @@ class _PlacardTile extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: _bg,
-                border: Border.all(color: HMColors.border),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                placard.division,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: _fg,
-                ),
-              ),
+            AspectRatio(
+              aspectRatio: 1,
+              child: SvgPicture.asset(placard.assetPath, fit: BoxFit.contain),
             ),
             const SizedBox(height: 8),
             Text(

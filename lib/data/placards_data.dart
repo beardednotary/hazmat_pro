@@ -28,6 +28,9 @@ class Placard {
     required this.handlingNotes,
   });
 
+  // Public-domain DOT placard artwork (Wikimedia Commons), one per division.
+  String get assetPath => 'assets/placards/$division.svg';
+
   bool matchesQuery(String q) {
     final lower = q.toLowerCase();
     return division.toLowerCase().contains(lower) ||
@@ -238,3 +241,12 @@ const List<Placard> kPlacards = [
     handlingNotes: 'A broad catch-all class — check the specific UN number entry rather than assuming low risk from the placard alone.',
   ),
 ];
+
+/// Finds the placard whose division exactly matches [hazardClass] (e.g. a
+/// UN entry's "2.3" or "8"), or null if there's no exact match.
+Placard? placardForDivision(String hazardClass) {
+  for (final p in kPlacards) {
+    if (p.division == hazardClass) return p;
+  }
+  return null;
+}

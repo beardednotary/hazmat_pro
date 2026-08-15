@@ -7,7 +7,7 @@ import 'screens/placards_screen.dart';
 import 'screens/un_numbers_screen.dart';
 import 'screens/glossary_screen.dart';
 import 'screens/quick_ref_screen.dart';
-import 'screens/assistant_screen.dart';
+import 'screens/identify_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -19,13 +19,13 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   int _currentIndex = 0;
 
-  static const _titles = ['PLACARDS', 'UN NUMBERS', 'GLOSSARY', 'QUICK REF', 'ASSISTANT'];
+  static const _titles = ['PLACARDS', 'UN NUMBERS', 'GLOSSARY', 'QUICK REF', 'IDENTIFY'];
   static const _subtitles = [
     '9 DOT HAZARD CLASSES',
     'SEARCHABLE · STARRABLE',
     'GHS · DOT TERMINOLOGY',
     'PPE · ZONES · SDS · ERG',
-    'AI MATERIAL IDENTIFICATION',
+    'HOLD & SPEAK TO IDENTIFY',
   ];
 
   @override
@@ -61,7 +61,7 @@ class _AppShellState extends State<AppShell> {
                   UnNumbersScreen(),
                   GlossaryScreen(),
                   QuickRefScreen(),
-                  AssistantScreen(),
+                  IdentifyScreen(),
                 ],
               ),
             ),
@@ -87,7 +87,7 @@ class _HazardBottomNav extends StatelessWidget {
     _TabData(icon: Icons.tag, label: 'UN NO.'),
     _TabData(icon: Icons.menu_book_outlined, label: 'GLOSSARY'),
     _TabData(icon: Icons.shield_outlined, label: 'QUICK REF'),
-    _TabData(icon: Icons.mic, label: 'ASSISTANT'),
+    _TabData(icon: Icons.mic, label: 'IDENTIFY'),
   ];
 
   @override

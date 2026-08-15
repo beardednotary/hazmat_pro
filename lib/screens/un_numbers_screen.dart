@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../data/placards_data.dart';
 import '../data/un_numbers_data.dart';
 import '../services/review_service.dart';
 import '../services/star_service.dart';
@@ -118,15 +120,14 @@ class _UnTile extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 70,
-            child: Text(entry.displayNumber, style: HMTextStyles.codeLabel.copyWith(fontSize: 14)),
-          ),
+          _PlacardThumb(division: entry.hazardClass),
           const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(entry.displayNumber, style: HMTextStyles.codeLabel.copyWith(fontSize: 13)),
+                const SizedBox(height: 2),
                 Text(entry.properShippingName, style: HMTextStyles.bodyText),
                 const SizedBox(height: 4),
                 Wrap(
@@ -156,6 +157,23 @@ class _UnTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PlacardThumb extends StatelessWidget {
+  final String division;
+  const _PlacardThumb({required this.division});
+
+  @override
+  Widget build(BuildContext context) {
+    final placard = placardForDivision(division);
+    return SizedBox(
+      width: 36,
+      height: 36,
+      child: placard != null
+          ? SvgPicture.asset(placard.assetPath, fit: BoxFit.contain)
+          : null,
     );
   }
 }

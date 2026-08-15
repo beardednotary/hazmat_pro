@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../data/placards_data.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
@@ -8,13 +9,6 @@ class PlacardDetailScreen extends StatelessWidget {
   final Placard placard;
 
   const PlacardDetailScreen({required this.placard, super.key});
-
-  Color get _bg => Color(int.parse('0x${placard.colorHex}'));
-
-  Color get _fg {
-    final luminance = _bg.computeLuminance();
-    return luminance > 0.5 ? Colors.black : Colors.white;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,27 +28,24 @@ class PlacardDetailScreen extends StatelessWidget {
                 children: [
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 28),
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     decoration: BoxDecoration(
-                      color: _bg,
+                      color: HMColors.surface,
                       border: Border.all(color: HMColors.border, width: 1.5),
                     ),
                     child: Column(
                       children: [
-                        Text(
-                          placard.division,
-                          style: TextStyle(
-                            fontSize: 48,
-                            fontWeight: FontWeight.bold,
-                            color: _fg,
-                          ),
+                        SizedBox(
+                          width: 140,
+                          height: 140,
+                          child: SvgPicture.asset(placard.assetPath, fit: BoxFit.contain),
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 12),
                         Text(
                           placard.name.toUpperCase(),
                           textAlign: TextAlign.center,
                           style: HMTextStyles.sectionHeader.copyWith(
-                            color: _fg,
+                            color: HMColors.primaryText,
                             fontSize: 12,
                             letterSpacing: 2,
                           ),

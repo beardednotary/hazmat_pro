@@ -3,8 +3,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:http/http.dart' as http;
+import '../data/placards_data.dart';
+import '../models/identification_result.dart';
+import '../services/history_service.dart';
 import '../theme/hazmat_theme.dart';
 import '../widgets/field_card.dart';
 
@@ -14,32 +18,36 @@ const _kApiSecret = String.fromEnvironment('HAZMAT_API_SECRET', defaultValue: ''
 
 enum _State { idle, recording, analyzing, results, error, unavailable }
 
-class AssistantScreen extends StatefulWidget {
-  const AssistantScreen({super.key});
+class IdentifyScreen extends StatefulWidget {
+  const IdentifyScreen({super.key});
 
   @override
-  State<AssistantScreen> createState() => _AssistantScreenState();
+  State<IdentifyScreen> createState() => _IdentifyScreenState();
 }
 
-class _AssistantScreenState extends State<AssistantScreen> {
+class _IdentifyScreenState extends State<IdentifyScreen> {
   final _speech = SpeechToText();
 
   _State _state = _State.idle;
   String _transcript = '';
-  _Result? _result;
+  IdentificationResult? _result;
   String _errorMsg = '';
 
   @override
   void initState() {
     super.initState();
     _initSpeech();
+    HistoryService.instance.addListener(_rebuild);
   }
 
   @override
   void dispose() {
+    HistoryService.instance.removeListener(_rebuild);
     _speech.stop();
     super.dispose();
   }
+
+  void _rebuild() => setState(() {});
 
   Future<void> _initSpeech() async {
     final available = await _speech.initialize(
@@ -102,10 +110,12 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body) as Map<String, dynamic>;
+        final result = IdentificationResult.fromApiJson(json);
         setState(() {
-          _result = _Result.fromJson(json);
+          _result = result;
           _state = _State.results;
         });
+        await HistoryService.instance.add(result);
       } else {
         setState(() {
           _errorMsg = 'Server error ${response.statusCode}. Try again.';
@@ -131,6 +141,14 @@ class _AssistantScreenState extends State<AssistantScreen> {
       _transcript = '';
       _result = null;
       _errorMsg = '';
+    });
+  }
+
+  void _openHistoryItem(IdentificationResult result) {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _result = result;
+      _state = _State.results;
     });
   }
 
@@ -249,6 +267,14 @@ class _AssistantScreenState extends State<AssistantScreen> {
                   : 'Hold the button and speak a UN number, placard, or material name — e.g. "UN 1203" or "gasoline tanker rollover."',
               style: HMTextStyles.dimBody.copyWith(height: 1.6),
             ),
+            if (HistoryService.instance.items.isNotEmpty) ...[
+              const SizedBox(height: 20),
+              _HistorySection(
+                items: HistoryService.instance.items,
+                onTap: _openHistoryItem,
+                onClear: () => HistoryService.instance.clear(),
+              ),
+            ],
           ],
 
           if (_state == _State.error) ...[
@@ -309,44 +335,140 @@ class _AssistantScreenState extends State<AssistantScreen> {
 }
 
 class _IdCard extends StatelessWidget {
-  final _Result result;
+  final IdentificationResult result;
   const _IdCard({required this.result});
 
   @override
   Widget build(BuildContext context) {
+    final placard = placardForDivision(result.hazardClass);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: const BoxDecoration(
         color: HMColors.headerBg,
         border: Border(left: BorderSide(color: HMColors.hazardYellow, width: 4)),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text('IDENTIFIED', style: HMTextStyles.sectionHeader.copyWith(fontSize: 10)),
-              const Spacer(),
-              if (result.guideNumber.isNotEmpty)
-                Text(
-                  'GUIDE ${result.guideNumber}',
-                  style: HMTextStyles.sectionHeader.copyWith(
-                    color: HMColors.hazardYellow,
-                    fontSize: 10,
-                  ),
+          if (placard != null) ...[
+            SizedBox(width: 48, height: 48, child: SvgPicture.asset(placard.assetPath)),
+            const SizedBox(width: 12),
+          ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text('IDENTIFIED', style: HMTextStyles.sectionHeader.copyWith(fontSize: 10)),
+                    const Spacer(),
+                    if (result.guideNumber.isNotEmpty)
+                      Text(
+                        'GUIDE ${result.guideNumber}',
+                        style: HMTextStyles.sectionHeader.copyWith(
+                          color: HMColors.hazardYellow,
+                          fontSize: 10,
+                        ),
+                      ),
+                  ],
                 ),
-            ],
+                const SizedBox(height: 8),
+                Text(result.material, style: HMTextStyles.screenTitle(fontSize: 22)),
+                if (result.unNumber.isNotEmpty || result.hazardClass.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    [result.unNumber, result.hazardClass].where((s) => s.isNotEmpty).join(' · '),
+                    style: HMTextStyles.dataMono,
+                  ),
+                ],
+              ],
+            ),
           ),
-          const SizedBox(height: 8),
-          Text(result.material, style: HMTextStyles.screenTitle(fontSize: 22)),
-          if (result.unNumber.isNotEmpty || result.hazardClass.isNotEmpty) ...[
-            const SizedBox(height: 4),
-            Text(
-              [result.unNumber, result.hazardClass].where((s) => s.isNotEmpty).join(' · '),
-              style: HMTextStyles.dataMono,
+        ],
+      ),
+    );
+  }
+}
+
+class _HistorySection extends StatelessWidget {
+  final List<IdentificationResult> items;
+  final ValueChanged<IdentificationResult> onTap;
+  final VoidCallback onClear;
+
+  const _HistorySection({required this.items, required this.onTap, required this.onClear});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text('RECENT', style: HMTextStyles.sectionHeader.copyWith(fontSize: 10)),
+            const Spacer(),
+            GestureDetector(
+              onTap: onClear,
+              child: Text(
+                'CLEAR',
+                style: HMTextStyles.sectionHeader.copyWith(
+                  fontSize: 10,
+                  color: HMColors.dimText,
+                ),
+              ),
             ),
           ],
-        ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(color: HMColors.surface, border: Border.all(color: HMColors.divider)),
+          child: Column(
+            children: [
+              for (int i = 0; i < items.length; i++) ...[
+                if (i > 0) Container(height: 1, color: HMColors.divider),
+                _HistoryRow(result: items[i], onTap: () => onTap(items[i])),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _HistoryRow extends StatelessWidget {
+  final IdentificationResult result;
+  final VoidCallback onTap;
+  const _HistoryRow({required this.result, required this.onTap});
+
+  String get _relativeTime {
+    final diff = DateTime.now().difference(result.queriedAt);
+    if (diff.inMinutes < 1) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final placard = placardForDivision(result.hazardClass);
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        child: Row(
+          children: [
+            if (placard != null) ...[
+              SizedBox(width: 28, height: 28, child: SvgPicture.asset(placard.assetPath)),
+              const SizedBox(width: 10),
+            ],
+            Expanded(
+              child: Text(result.material, style: HMTextStyles.bodyText, overflow: TextOverflow.ellipsis),
+            ),
+            const SizedBox(width: 8),
+            Text(_relativeTime, style: HMTextStyles.dataMono.copyWith(fontSize: 10)),
+          ],
+        ),
       ),
     );
   }
@@ -405,38 +527,6 @@ class _OutlineButton extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _Result {
-  final String material;
-  final String unNumber;
-  final String hazardClass;
-  final String guideNumber;
-  final List<String> isolationPpe;
-  final List<String> responseGuidance;
-  final String overall;
-
-  const _Result({
-    required this.material,
-    required this.unNumber,
-    required this.hazardClass,
-    required this.guideNumber,
-    required this.isolationPpe,
-    required this.responseGuidance,
-    required this.overall,
-  });
-
-  factory _Result.fromJson(Map<String, dynamic> json) {
-    return _Result(
-      material: json['material'] as String? ?? 'Unknown material',
-      unNumber: json['un_number'] as String? ?? '',
-      hazardClass: json['hazard_class'] as String? ?? '',
-      guideNumber: json['guide_number'] as String? ?? '',
-      isolationPpe: List<String>.from(json['isolation_ppe'] as List? ?? []),
-      responseGuidance: List<String>.from(json['response_guidance'] as List? ?? []),
-      overall: json['overall'] as String? ?? '',
     );
   }
 }
