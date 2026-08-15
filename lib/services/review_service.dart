@@ -37,6 +37,13 @@ class ReviewService {
     await _request(prefs);
   }
 
+  /// A strong quiz result is a mastery/engagement signal worth asking on,
+  /// same as a successful Identify.
+  Future<void> onQuizStrongScore() async {
+    final prefs = await SharedPreferences.getInstance();
+    await _request(prefs);
+  }
+
   Future<void> _request(SharedPreferences prefs) async {
     if (_shownThisSession) return;
     if (prefs.getBool(_shownKey) == true) return;

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
 import 'services/history_service.dart';
+import 'services/quiz_service.dart';
 import 'services/star_service.dart';
 import 'theme/hazmat_theme.dart';
 
@@ -9,6 +10,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await StarService.instance.load();
   await HistoryService.instance.load();
+  await QuizService.instance.load();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,

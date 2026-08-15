@@ -5,12 +5,14 @@ class HazmatHeader extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onBack;
+  final VoidCallback? onQuiz;
   final VoidCallback? onSettings;
 
   const HazmatHeader({
     required this.title,
     this.subtitle = '',
     this.onBack,
+    this.onQuiz,
     this.onSettings,
     super.key,
   });
@@ -74,6 +76,18 @@ class HazmatHeader extends StatelessWidget {
                             ],
                           ),
                         ),
+                        if (onQuiz != null)
+                          GestureDetector(
+                            onTap: onQuiz,
+                            child: const Padding(
+                              padding: EdgeInsets.only(left: 10),
+                              child: Icon(
+                                Icons.school_outlined,
+                                size: 22,
+                                color: HMColors.secondaryText,
+                              ),
+                            ),
+                          ),
                         if (onSettings != null)
                           GestureDetector(
                             onTap: onSettings,
