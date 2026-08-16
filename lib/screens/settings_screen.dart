@@ -12,7 +12,6 @@ import '../widgets/hazmat_header.dart';
 // lib/data/un_numbers_data.dart — update this whenever that pass is redone.
 const _kReferenceDataVerifiedOn = 'August 14, 2026';
 
-// TODO: replace with a real support inbox before shipping.
 const _kSupportEmail = 'support@dahvio.com';
 
 class SettingsScreen extends StatelessWidget {

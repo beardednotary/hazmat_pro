@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:speech_to_text/speech_to_text.dart';
@@ -235,37 +236,50 @@ class _IdentifyScreenState extends State<IdentifyScreen> {
 
           // ── Hold-to-speak button ─────────────────────────────────
           if (_state != _State.results)
-            GestureDetector(
-              onLongPressStart: (_) => _startRecording(),
-              onLongPressEnd: (_) => _stopAndAnalyze(),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: _state == _State.recording ? HMColors.dangerRed : HMColors.hazardYellow,
-                  border: Border.all(
+            Semantics(
+              button: true,
+              label: _state == _State.recording ? 'Release to identify' : 'Hold to speak',
+              hint: 'Hold down and speak, or use the rotor actions to start '
+                  'and stop recording',
+              customSemanticsActions: _state == _State.recording
+                  ? {
+                      CustomSemanticsAction(label: 'Stop and identify'): _stopAndAnalyze,
+                    }
+                  : {
+                      CustomSemanticsAction(label: 'Start recording'): _startRecording,
+                    },
+              child: GestureDetector(
+                onLongPressStart: (_) => _startRecording(),
+                onLongPressEnd: (_) => _stopAndAnalyze(),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  decoration: BoxDecoration(
                     color: _state == _State.recording ? HMColors.dangerRed : HMColors.hazardYellow,
-                    width: 2,
+                    border: Border.all(
+                      color: _state == _State.recording ? HMColors.dangerRed : HMColors.hazardYellow,
+                      width: 2,
+                    ),
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      _state == _State.recording ? Icons.mic : Icons.mic_none,
-                      size: 22,
-                      color: Colors.black,
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      _state == _State.recording ? 'RELEASE TO IDENTIFY' : 'HOLD TO SPEAK',
-                      style: HMTextStyles.sectionHeader.copyWith(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        _state == _State.recording ? Icons.mic : Icons.mic_none,
+                        size: 22,
                         color: Colors.black,
-                        fontSize: 13,
-                        letterSpacing: 2,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Text(
+                        _state == _State.recording ? 'RELEASE TO IDENTIFY' : 'HOLD TO SPEAK',
+                        style: HMTextStyles.sectionHeader.copyWith(
+                          color: Colors.black,
+                          fontSize: 13,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -46,16 +46,12 @@ class HazmatHeader extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         if (onBack != null)
-                          GestureDetector(
-                            onTap: onBack,
-                            child: const Padding(
-                              padding: EdgeInsets.only(right: 10),
-                              child: Icon(
-                                Icons.arrow_back_ios,
-                                size: 16,
-                                color: HMColors.dimText,
-                              ),
-                            ),
+                          _HeaderIconButton(
+                            icon: Icons.arrow_back_ios,
+                            iconSize: 16,
+                            color: HMColors.dimText,
+                            label: 'Back',
+                            onTap: onBack!,
                           ),
                         Expanded(
                           child: Column(
@@ -77,28 +73,20 @@ class HazmatHeader extends StatelessWidget {
                           ),
                         ),
                         if (onQuiz != null)
-                          GestureDetector(
-                            onTap: onQuiz,
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 10),
-                              child: Icon(
-                                Icons.school_outlined,
-                                size: 22,
-                                color: HMColors.secondaryText,
-                              ),
-                            ),
+                          _HeaderIconButton(
+                            icon: Icons.school_outlined,
+                            iconSize: 22,
+                            color: HMColors.secondaryText,
+                            label: 'Quiz',
+                            onTap: onQuiz!,
                           ),
                         if (onSettings != null)
-                          GestureDetector(
-                            onTap: onSettings,
-                            child: const Padding(
-                              padding: EdgeInsets.only(left: 10),
-                              child: Icon(
-                                Icons.settings_outlined,
-                                size: 22,
-                                color: HMColors.secondaryText,
-                              ),
-                            ),
+                          _HeaderIconButton(
+                            icon: Icons.settings_outlined,
+                            iconSize: 22,
+                            color: HMColors.secondaryText,
+                            label: 'Settings',
+                            onTap: onSettings!,
                           ),
                       ],
                     ),
@@ -108,6 +96,39 @@ class HazmatHeader extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderIconButton extends StatelessWidget {
+  final IconData icon;
+  final double iconSize;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+
+  const _HeaderIconButton({
+    required this.icon,
+    required this.iconSize,
+    required this.color,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        behavior: HitTestBehavior.opaque,
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: Center(child: Icon(icon, size: iconSize, color: color)),
         ),
       ),
     );

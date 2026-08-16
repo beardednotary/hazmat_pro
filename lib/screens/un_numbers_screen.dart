@@ -79,21 +79,26 @@ class _UnNumbersScreenState extends State<UnNumbersScreen> {
                 ),
               ),
               const SizedBox(width: 8),
-              GestureDetector(
-                onTap: _toggleStarredOnly,
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: _starredOnly ? HMColors.hazardYellow : HMColors.surface,
-                    border: Border.all(
-                      color: _starredOnly ? HMColors.hazardYellow : HMColors.border,
+              Semantics(
+                button: true,
+                label: 'Show starred only',
+                selected: _starredOnly,
+                child: GestureDetector(
+                  onTap: _toggleStarredOnly,
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      color: _starredOnly ? HMColors.hazardYellow : HMColors.surface,
+                      border: Border.all(
+                        color: _starredOnly ? HMColors.hazardYellow : HMColors.border,
+                      ),
                     ),
-                  ),
-                  child: Icon(
-                    _starredOnly ? Icons.star : Icons.star_outline,
-                    size: 20,
-                    color: _starredOnly ? Colors.black : HMColors.dimText,
+                    child: Icon(
+                      _starredOnly ? Icons.star : Icons.star_outline,
+                      size: 20,
+                      color: _starredOnly ? Colors.black : HMColors.dimText,
+                    ),
                   ),
                 ),
               ),
@@ -181,17 +186,29 @@ class _UnTile extends StatelessWidget {
               ],
             ),
           ),
-          GestureDetector(
-            onTap: onStar,
-            behavior: HitTestBehavior.opaque,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 4, 0),
-              child: Icon(
-                isStarred ? Icons.star : Icons.star_outline,
-                size: 18,
-                color: isStarred
-                    ? HMColors.hazardYellow.withAlpha(200)
-                    : HMColors.dimText,
+          Semantics(
+            button: true,
+            label: isStarred
+                ? '${entry.displayNumber} starred, tap to unstar'
+                : '${entry.displayNumber} not starred, tap to star',
+            child: GestureDetector(
+              onTap: onStar,
+              behavior: HitTestBehavior.opaque,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+                child: SizedBox(
+                  width: 44,
+                  height: 44,
+                  child: Center(
+                    child: Icon(
+                      isStarred ? Icons.star : Icons.star_outline,
+                      size: 18,
+                      color: isStarred
+                          ? HMColors.hazardYellow.withAlpha(200)
+                          : HMColors.dimText,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),

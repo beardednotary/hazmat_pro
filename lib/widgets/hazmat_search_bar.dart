@@ -26,13 +26,17 @@ class HazmatSearchBar extends StatelessWidget {
         hintText: hint,
         prefixIcon: const Icon(Icons.search, size: 20),
         suffixIcon: controller.text.isNotEmpty
-            ? GestureDetector(
-                onTap: () {
-                  controller.clear();
-                  onChanged('');
-                  onClear?.call();
-                },
-                child: const Icon(Icons.close, size: 18, color: HMColors.dimText),
+            ? Semantics(
+                button: true,
+                label: 'Clear search',
+                child: GestureDetector(
+                  onTap: () {
+                    controller.clear();
+                    onChanged('');
+                    onClear?.call();
+                  },
+                  child: const Icon(Icons.close, size: 18, color: HMColors.dimText),
+                ),
               )
             : null,
       ),
