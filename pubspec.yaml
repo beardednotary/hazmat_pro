@@ -1,7 +1,7 @@
 name: hazmat_pro
 description: HazMat Pro - MSDS & UN Number reference. Placards, UN numbers, GHS/DOT glossary, and quick reference for hazmat handling.
 publish_to: 'none'
-version: 1.0.0+9
+version: 1.0.0+10
 
 environment:
   sdk: ^3.11.3
