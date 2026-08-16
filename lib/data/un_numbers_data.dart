@@ -33,6 +33,7 @@ class UnEntry {
   bool matchesQuery(String q) {
     final lower = q.toLowerCase();
     return unNumber.contains(lower) ||
+        displayNumber.toLowerCase().contains(lower) ||
         properShippingName.toLowerCase().contains(lower) ||
         ergGuideNumber.contains(lower);
   }
